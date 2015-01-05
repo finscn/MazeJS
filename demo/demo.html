@@ -1,0 +1,66 @@
+<!doctype html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Expires" content="-1" />
+<meta http-equiv="Cache-Control" content="no-cache" />
+
+  <meta charset="utf-8">
+  <title>Maze Demo</title>
+  <!-- <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, target-densitydpi=device-dpi" /> -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no" />
+  <meta name="apple-mobile-web-app-title" content="H5Game">
+  <meta name="apple-touch-fullscreen" content="yes" >
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name='format-detection' content='telephone=no'>
+  <meta name="screen-orientation" content="portrait">
+  <meta name="full-screen" content="yes">
+  <meta name="x5-fullscreen" content="true">
+  <meta name="360-fullscreen" content="true">
+
+  <script type="text/javascript" src="../src/Maze.js"></script>
+  <script type="text/javascript" src="main.js"></script>
+  <script type="text/javascript">
+
+    function createPerfectMaze(){
+        createMaze(true);
+    }
+    function createMaze(perfect){
+        maze.perfect=perfect||false;
+        maze.init();
+        maze.start(0,0);
+       renderMaze(context, maze);
+    }
+  </script>
+  <style>
+  #toolbar {
+    position: absolute;
+    padding:2px;
+    top:0;
+    right:0;
+    width:180px;
+  }
+  #toolbar button {
+    padding:10px;
+    font-size:16px;
+    margin:5px;
+  }
+  </style>
+</head>
+<body>
+  <div id="container" class="splash">
+    <canvas id="canvas"></canvas>
+    <div id="info"></div>
+  </div>
+  <div id="toolbar">
+    <button type="button" onclick="createPerfectMaze()">生成 Perfect 迷宫</button>
+    <div>Perfect Maze: 迷宫中没有不可达区域, 同时没有循环路径, 也没有"广场"区域.</div>
+    <br>
+    <br>
+    <button type="button" onclick="createMaze()">生成 非Perfect 迷宫</button>
+    <div>非Perfect Maze: 迷宫中没有不可达区域, 但是允许循环路径, 允许有"广场"区域.</div>
+  </div>
+</body>
+</html>
