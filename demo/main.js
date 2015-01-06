@@ -6,6 +6,7 @@ var maze = new Maze({
 
     onInit: function() {
         this.checkCount = {};
+        this.foundEndNode = false;
     },
 
     isValid: function(nearNode, node, dir) {
@@ -27,6 +28,7 @@ var maze = new Maze({
     },
 
     updateCurrent: function() {
+
         // 每步有 70% 的概率 进行回溯
         if (Math.random() <= 0.70) {
             this.backtrace();
