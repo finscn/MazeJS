@@ -1,6 +1,6 @@
 var maze = new Maze({
-    cols: 24,
-    rows: 16,
+    width: 24,
+    height: 16,
 
     perfect: true,
 
@@ -8,18 +8,16 @@ var maze = new Maze({
         this.checkCount = {};
     },
 
-    isValid: function(c, r) {
-        if (c < 0 || r < 0 || c >= this.cols || r >= this.rows) {
+    isValid: function(nearNode, node, dir) {
+        if (!nearNode) {
             return false;
         }
-        if (this.grid[r][c] === 0) {
+        if (nearNode && nearNode.value === 0) {
             return true;
-        }
-        if (this.perfect){
-            return false;
-        }
-
-        // 用于生成一种非Perfect迷宫).
+        };
+        var c = nearNode.x,
+            r = nearNode.y;
+        // 用于生成一种非Perfect迷宫
         this.checkCount[c + "-" + r] = this.checkCount[c + "-" + r] || 0;
         var count = ++this.checkCount[c + "-" + r];
         return Math.random() < 0.3 && count < 3;
@@ -47,57 +45,92 @@ var maze = new Maze({
         return idx;
     },
 
+    isOver: function() {
+        // 当探索到迷宫终点时,终止迷宫的生成
+        return this.current == this.endNode;
+    }
 });
 
-// maze.start();
-maze.start(0, 0);
 
 
 window.onload = function() {
     start();
 }
 
+function createPerfectMaze() {
+    createMaze(true);
+}
+
+function createMaze(perfect) {
+    maze.perfect = perfect || false;
+    maze.init();
+    // maze.setStart(0,0);
+    // maze.setEnd(4, 4);
+
+    maze.setStart();
+    do {
+        maze.setEnd();
+    } while (maze.startNode == maze.endNode);
+
+    maze.start();
+
+    renderMaze(context, maze);
+}
+
 function $id(id) {
     return document.getElementById(id);
 }
 
-var canvas,context;
+var canvas, context;
+
 function start() {
     canvas = $id("canvas");
     context = canvas.getContext("2d");
-
-    renderMaze(context, maze);
-
+    createMaze(false);
 }
 
 function renderMaze(context, maze) {
 
-    var grid = JSON.parse(JSON.stringify(maze.grid));
+    // var grid = JSON.parse(JSON.stringify(maze.grid));
+    var grid = maze.grid;
 
     var wallWidth = 4;
     var cellSize = 35;
-    var width = cellSize * maze.cols;
-    var height = cellSize * maze.rows;
+    var width = cellSize * maze.width;
+    var height = cellSize * maze.height;
     var x = 10,
         y = 10;
 
-    canvas.width = width+wallWidth+x*2;
-    canvas.height = height+wallWidth+y*2;
+    canvas.width = width + wallWidth + x * 2;
+    canvas.height = height + wallWidth + y * 2;
 
     context.fillStyle = "#eeeeee";
     context.fillRect(0, 0, canvas.width, canvas.height);
     context.fillStyle = "#334466";
     context.strokeStyle = "#334466";
-    context.font = "12px Arial";
+    context.font = "18px Arial";
     context.lineWidth = wallWidth;
 
     for (var r = 0; r < grid.length; r++) {
         var row = grid[r];
         for (var c = 0; c < row.length; c++) {
-            var left = (row[c] & Maze.Direction.W) !== Maze.Direction.W;
-            var top = (row[c] & Maze.Direction.N) !== Maze.Direction.N;
+            var node = row[c];
             var cx = c * cellSize + x;
             var cy = r * cellSize + y;
+            if (!node.value) {
+                context.fillRect(cx, cy, cellSize, cellSize);
+                continue;
+            }
+
+            if (node == maze.startNode) {
+                context.fillText("S", cx + 12, cy + 24);
+            } else if (node == maze.endNode) {
+                context.fillText("E", cx + 12, cy + 24);
+            } else {
+
+            }
+            var left = (node.value & Maze.Direction.W) !== Maze.Direction.W;
+            var top = (node.value & Maze.Direction.N) !== Maze.Direction.N;
             if (left && top) {
                 context.fillRect(cx, cy, wallWidth, cellSize);
                 context.fillRect(cx, cy, cellSize, wallWidth);
@@ -108,10 +141,10 @@ function renderMaze(context, maze) {
             } else {
                 var w = false;
                 if (r > 0) {
-                    w = (grid[r - 1][c] & Maze.Direction.W) !== Maze.Direction.W;
+                    w = (grid[r - 1][c].value & Maze.Direction.W) !== Maze.Direction.W;
                 }
                 if (w && c > 0) {
-                    w = (grid[r][c - 1] & Maze.Direction.N) !== Maze.Direction.N;
+                    w = (grid[r][c - 1].value & Maze.Direction.N) !== Maze.Direction.N;
                 }
                 var ltc = w ? 1 : 0;
                 if (ltc) {
@@ -121,6 +154,6 @@ function renderMaze(context, maze) {
         }
     }
 
-    context.fillRect(x, cellSize * maze.rows + y, cellSize * maze.cols, wallWidth);
-    context.fillRect(cellSize * maze.cols + x, y, wallWidth, cellSize * maze.rows + wallWidth);
+    context.fillRect(x, cellSize * maze.height + y, cellSize * maze.width, wallWidth);
+    context.fillRect(cellSize * maze.width + x, y, wallWidth, cellSize * maze.height + wallWidth);
 }
