@@ -27,6 +27,10 @@
 
   </script>
   <style>
+  body{
+    padding:0px;
+    margin:0px;
+  }
   #toolbar {
     position: absolute;
     padding:2px;
@@ -39,6 +43,9 @@
     font-size:16px;
     margin:5px;
   }
+  #checkOverBar {
+    height:25px;
+  }
   </style>
 </head>
 <body>
@@ -48,14 +55,19 @@
   </div>
   <div id="toolbar">
     <button type="button" onclick="createPerfectMaze()">生成 Perfect 迷宫</button>
-    <div>Perfect Maze: 迷宫中没有不可达区域, 同时没有循环路径, 也没有"广场"区域.</div>
+    <div>Perfect Maze: 迷宫中没有不可达区域, 没有循环路径, 没有"房间".</div>
+    <br>
+    <br>
+    <button type="button" onclick="createBraidMaze()">生成 Braid 迷宫</button>
+    <div>Braid Maze: 迷宫中没有不可达区域, 没有死路, 有循环路径, 没有"房间".</div>
     <br>
     <br>
     <button type="button" onclick="createMaze()">生成 非Perfect 迷宫</button>
-    <div>非Perfect Maze: 迷宫中没有不可达区域, 但是允许循环路径, 允许有"广场"区域.</div>
+    <div>非Perfect Maze: 迷宫中没有不可达区域, 有死路, 有循环路径, 有"房间".</div>
     <br>
     <br>
-    <div>Demo中加入了终止条件: 当探索到迷宫终点E, 且探索了至少一半的区域时,终止迷宫的生成</div>
+    <div id="checkOverBar"><input type="checkbox" id="checkOver">终止条件</div>
+    <div>当探索到迷宫终点E, 且探索了至少一半的区域时,终止迷宫的生成</div>
   </div>
 </body>
 </html>

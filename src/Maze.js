@@ -21,6 +21,10 @@ Maze.prototype = {
 
     init: function() {
         this.trace = [];
+
+        this.currentDir = 0;
+        this.current = null;
+
         this.size = this.width * this.height;
         this.initGrid();
         this.onInit();
@@ -89,6 +93,7 @@ Maze.prototype = {
     },
     moveTo: function(node, dir) {
         this.beforeMove(node);
+        this.currentDir = dir;
         this.current.value |= dir;
         this.setCurrent(node);
         node.value |= Maze.Direction.opposite[dir];
@@ -101,8 +106,8 @@ Maze.prototype = {
 
     },
 
-    start: function() {
-        this.beforeStart();
+    generate: function() {
+        this.beforeGenrate();
         this.setCurrent(this.startNode);
         this.stepCount = 0;
         while (this.nextStep()) {
@@ -113,15 +118,17 @@ Maze.prototype = {
             // console.log(step);
         }
         console.log("Step Count : " + this.stepCount);
-
+        this.afterGenrate();
     },
-    beforeStart: function() {},
+    beforeGenrate: function() {},
+    afterGenrate: function() {},
 
     // 生成迷宫时的提前终止条件
     isOver: function() {},
 
     nextStep: function() {
         if (!this.neighbors) {
+            this.beforeBacktrace();
             return this.backtrace();
         }
         var n = this.getNeighbor();
@@ -129,7 +136,7 @@ Maze.prototype = {
         this.updateCurrent();
         return true;
     },
-
+    beforeBacktrace: function() {},
     backtrace: function() {
         var len = this.trace.length;
         while (len > 0) {
@@ -157,22 +164,22 @@ Maze.prototype = {
         var n = [];
         var c = node.x;
         var r = node.y;
-        var nearNode, dir;
+        var dir, nearNode;
 
-        nearNode = r > 0 ? this.grid[r - 1][c] : null;
         dir = Maze.Direction.N;
+        nearNode = r > 0 ? this.grid[r - 1][c] : null;
         this.isValid(nearNode, node, dir) && n.push([nearNode, dir]);
 
-        nearNode = this.grid[r][c + 1];
         dir = Maze.Direction.E;
+        nearNode = this.grid[r][c + 1];
         this.isValid(nearNode, node, dir) && n.push([nearNode, dir]);
 
-        nearNode = r < this.height - 1 ? this.grid[r + 1][c] : null;
         dir = Maze.Direction.S;
+        nearNode = r < this.height - 1 ? this.grid[r + 1][c] : null;
         this.isValid(nearNode, node, dir) && n.push([nearNode, dir]);
 
-        nearNode = this.grid[r][c - 1];
         dir = Maze.Direction.W;
+        nearNode = this.grid[r][c - 1];
         this.isValid(nearNode, node, dir) && n.push([nearNode, dir]);
 
         n = this.updateNeighbors(node, n);
