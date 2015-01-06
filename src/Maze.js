@@ -108,6 +108,7 @@ Maze.prototype = {
     },
 
     start: function() {
+        this.beforeStart();
         this.setCurrent(this.startNode);
         var step = 0;
         while (this.nextStep()) {
@@ -120,6 +121,7 @@ Maze.prototype = {
         console.log("Steps : " + step);
 
     },
+    beforeStart: function(){},
 
     // 生成迷宫时的提前终止条件
     isOver: function() {},
