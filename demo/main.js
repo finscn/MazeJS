@@ -15,7 +15,7 @@ var maze = new Maze({
         }
         if (nearNode && nearNode.value === 0) {
             return true;
-        };
+        }
         if (this.perfect) {
             return false;
         }
@@ -29,8 +29,8 @@ var maze = new Maze({
 
     updateCurrent: function() {
 
-        // 每步有 70% 的概率 进行回溯
-        if (Math.random() <= 0.70) {
+        // 每步有 10% 的概率 进行回溯
+        if (Math.random() <= 0.10) {
             this.backtrace();
         }
     },
@@ -40,12 +40,12 @@ var maze = new Maze({
         var r = Math.random();
         var len = this.trace.length;
         var idx = 0;
-        if (r < 0.1) {
-            idx = len * Math.random() >> 0;
-        } else if (r < 0.3) {
+        if (r < 0.5) {
             idx = len - 1;
-        } else if (r < 0.6) {
+        } else if (r < 0.7) {
             idx = len >> 1;
+        } else if (r < 0.8) {
+            idx = len * Math.random() >> 0;
         }
         return idx;
     },
@@ -55,7 +55,7 @@ var maze = new Maze({
             this.foundEndNode = true;
         }
         // 当探索到迷宫终点, 且探索了至少一半的区域时,终止迷宫的生成
-        if (this.foundEndNode && this.stepCount > this.size / 2) {
+        if (this.foundEndNode && this.stepCount >= this.size / 2) {
             return true;
         }
         return false;
