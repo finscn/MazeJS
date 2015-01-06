@@ -1,4 +1,4 @@
-"use strick";
+"use strict";
 
 var Maze = function(options) {
     for (var p in options) {
