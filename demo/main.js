@@ -15,6 +15,9 @@ var maze = new Maze({
         if (nearNode && nearNode.value === 0) {
             return true;
         };
+        if (this.perfect){
+            return false;
+        }
         var c = nearNode.x,
             r = nearNode.y;
         // 用于生成一种非Perfect迷宫
