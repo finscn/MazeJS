@@ -49,6 +49,11 @@ Maze.prototype = {
     getNode: function(c, r) {
         return this.grid[r][c];
     },
+    getRandomNode: function() {
+        var r = this.random(0, this.height - 1);
+        var c = this.random(0, this.width - 1);
+        return this.grid[r][c];
+    },
     setMark: function(node, value) {
         return node.value |= value;
     },
@@ -60,22 +65,10 @@ Maze.prototype = {
     },
 
     setStart: function(c, r) {
-        if (arguments.length < 2) {
-            r = this.random(0, this.height - 1);
-        }
-        if (arguments.length < 1) {
-            c = this.random(0, this.width - 1);
-        }
         var node = this.grid[r][c];
         this.startNode = node;
     },
     setEnd: function(c, r) {
-        if (arguments.length < 2) {
-            r = this.random(0, this.height - 1);
-        }
-        if (arguments.length < 1) {
-            c = this.random(0, this.width - 1);
-        }
         var node = this.grid[r][c];
         this.endNode = node;
     },

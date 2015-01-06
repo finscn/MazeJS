@@ -64,12 +64,12 @@ function createPerfectMaze() {
 function createMaze(perfect) {
     maze.perfect = perfect || false;
     maze.init();
-    // maze.setStart(0,0);
+    // maze.setStart(0, 0);
     // maze.setEnd(4, 4);
 
-    maze.setStart();
+    maze.startNode = maze.getRandomNode();
     do {
-        maze.setEnd();
+        maze.endNode = maze.getRandomNode();
     } while (maze.startNode == maze.endNode);
 
     maze.start();
