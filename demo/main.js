@@ -1,6 +1,6 @@
 var maze = new Maze({
-    width: 24,
-    height: 16,
+    width: 60,
+    height: 40,
 
     perfect: true,
 
@@ -86,7 +86,7 @@ var canvas, context;
 function start() {
     canvas = $id("canvas");
     context = canvas.getContext("2d");
-    createMaze(false);
+    createMaze(true);
 }
 
 function renderMaze(context, maze) {
@@ -94,8 +94,8 @@ function renderMaze(context, maze) {
     // var grid = JSON.parse(JSON.stringify(maze.grid));
     var grid = maze.grid;
 
-    var wallWidth = 4;
-    var cellSize = 35;
+    var wallWidth = 2;
+    var cellSize = 15;
     var width = cellSize * maze.width;
     var height = cellSize * maze.height;
     var x = 10,
@@ -108,7 +108,7 @@ function renderMaze(context, maze) {
     context.fillRect(0, 0, canvas.width, canvas.height);
     context.fillStyle = "#334466";
     context.strokeStyle = "#334466";
-    context.font = "18px Arial";
+    context.font = "12px Arial";
     context.lineWidth = wallWidth;
 
     for (var r = 0; r < grid.length; r++) {
@@ -123,9 +123,9 @@ function renderMaze(context, maze) {
             }
 
             if (node == maze.startNode) {
-                context.fillText("S", cx + 12, cy + 24);
+                context.fillText("S", cx + cellSize*1/3, cy + cellSize-2);
             } else if (node == maze.endNode) {
-                context.fillText("E", cx + 12, cy + 24);
+                context.fillText("E", cx + cellSize*1/3, cy + cellSize-2);
             } else {
 
             }
