@@ -175,7 +175,7 @@ Maze.prototype = {
         dir = Maze.Direction.W;
         this.isValid(nearNode, node, dir) && n.push([nearNode, dir]);
 
-        n = this.updateNeighbors(n);
+        n = this.updateNeighbors(node, n);
 
         return n.length > 0 ? n : null;
     },
