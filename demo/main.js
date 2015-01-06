@@ -15,7 +15,7 @@ var maze = new Maze({
         if (nearNode && nearNode.value === 0) {
             return true;
         };
-        if (this.perfect){
+        if (this.perfect) {
             return false;
         }
         var c = nearNode.x,
@@ -49,11 +49,11 @@ var maze = new Maze({
     },
 
     isOver: function() {
-        if (this.current==this.endNode){
-            this.foundEndNode=true;
+        if (this.current == this.endNode) {
+            this.foundEndNode = true;
         }
         // 当探索到迷宫终点, 且探索了至少一半的区域时,终止迷宫的生成
-        if (this.foundEndNode && this.stepCount>this.size/2){
+        if (this.foundEndNode && this.stepCount > this.size / 2) {
             return true;
         }
         return false;
@@ -132,9 +132,9 @@ function renderMaze(context, maze) {
             }
 
             if (node == maze.startNode) {
-                context.fillText("S", cx + cellSize*1/3, cy + cellSize-2);
+                context.fillText("S", cx + cellSize * 1 / 3, cy + cellSize - 2);
             } else if (node == maze.endNode) {
-                context.fillText("E", cx + cellSize*1/3, cy + cellSize-2);
+                context.fillText("E", cx + cellSize * 1 / 3, cy + cellSize - 2);
             } else {
 
             }

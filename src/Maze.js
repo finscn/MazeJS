@@ -175,9 +175,13 @@ Maze.prototype = {
         dir = Maze.Direction.W;
         this.isValid(nearNode, node, dir) && n.push([nearNode, dir]);
 
+        n = this.updateNeighbors(n);
+
         return n.length > 0 ? n : null;
     },
-
+    updateNeighbors: function(node, neighbors) {
+        return neighbors;
+    },
     isValid: function(nearNode, node, dir) {
         return nearNode && nearNode.value === 0;
     },
@@ -211,5 +215,17 @@ Maze.Direction = {
         2: 1,
         4: 8,
         8: 4
-    }
+    },
+    stepX: {
+        1: 0,
+        2: 0,
+        4: 1,
+        8: -1
+    },
+    stepY: {
+        1: -1,
+        2: 1,
+        4: 0,
+        8: 0
+    },
 };
