@@ -21,6 +21,7 @@ Maze.prototype = {
 
     init: function() {
         this.trace = [];
+        this.size = this.width * this.height;
         this.initGrid();
         this.onInit();
     },
@@ -103,18 +104,18 @@ Maze.prototype = {
     start: function() {
         this.beforeStart();
         this.setCurrent(this.startNode);
-        var step = 0;
+        this.stepCount = 0;
         while (this.nextStep()) {
-            step++;
+            this.stepCount++;
             if (this.isOver() === true) {
                 break;
             }
             // console.log(step);
         }
-        console.log("Steps : " + step);
+        console.log("Step Count : " + this.stepCount);
 
     },
-    beforeStart: function(){},
+    beforeStart: function() {},
 
     // 生成迷宫时的提前终止条件
     isOver: function() {},

@@ -46,8 +46,14 @@ var maze = new Maze({
     },
 
     isOver: function() {
-        // 当探索到迷宫终点时,终止迷宫的生成
-        return this.current == this.endNode;
+        if (this.current==this.endNode){
+            this.foundEndNode=true;
+        }
+        // 当探索到迷宫终点, 且探索了至少一半的区域时,终止迷宫的生成
+        if (this.foundEndNode && this.stepCount>this.size/2){
+            return true;
+        }
+        return false;
     }
 });
 
