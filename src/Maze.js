@@ -14,21 +14,24 @@ Maze.prototype = {
     height: 0,
     grid: null,
 
+    currentDir: 0,
+    currentDirCount: 0,
+
+    currentNode: null,
     startNode: null,
     endNode: null,
+
     // 是否每走一步, 都尝试回溯.
     alwaysBacktrace: false,
 
     init: function() {
         this.trace = [];
 
-        this.currentDir = 0;
-        this.current = null;
-
         this.size = this.width * this.height;
         this.initGrid();
         this.onInit();
     },
+
     initGrid: function() {
         var grid = this.grid = [];
         for (var r = 0; r < this.height; r++) {
@@ -78,8 +81,17 @@ Maze.prototype = {
         this.endNode = node;
     },
 
+    getRoadCount: function(node){
+        var count=0;
+        this.isMarked(node, Maze.Direction.N) && count++ ;
+        this.isMarked(node, Maze.Direction.E) && count++ ;
+        this.isMarked(node, Maze.Direction.S) && count++ ;
+        this.isMarked(node, Maze.Direction.W) && count++ ;
+        return count;
+    },
+
     setCurrent: function(node) {
-        this.current = node;
+        this.currentNode = node;
 
         this.neighbors = this.getValidNeighbors(node);
 
@@ -93,8 +105,13 @@ Maze.prototype = {
     },
     moveTo: function(node, dir) {
         this.beforeMove(node);
-        this.currentDir = dir;
-        this.current.value |= dir;
+        if (this.currentDir == dir) {
+            this.currentDirCount++;
+        } else {
+            this.currentDir = dir;
+            this.currentDirCount = 1;
+        }
+        this.currentNode.value |= dir;
         this.setCurrent(node);
         node.value |= Maze.Direction.opposite[dir];
         this.afterMove(node);
@@ -142,10 +159,10 @@ Maze.prototype = {
         while (len > 0) {
             var idx = this.getTraceIndex();
             var node = this.trace[idx];
-            var n = this.getValidNeighbors(node);
-            if (n) {
-                this.current = node;
-                this.neighbors = n;
+            var nm = this.getValidNeighbors(node);
+            if (nm) {
+                this.currentNode = node;
+                this.neighbors = nm;
                 return true;
             } else {
                 this.trace.splice(idx, 1);
@@ -155,40 +172,82 @@ Maze.prototype = {
         return false;
     },
 
+    setRoom: function(x, y, width, height) {
+        var grid = this.grid;
+        var ex = x + width;
+        var ey = y + height;
 
+        for (var r = y; r < ey; r++) {
+            var row = grid[r];
+            if (!row) {
+                continue;
+            }
+            for (var c = x; c < ex; c++) {
+                var node = row[c];
+                if (node) {
+                    node.value = Maze.Direction.ALL;
+                }
+            }
+        }
+    },
+    setBlock: function(x, y, width, height) {
+        var grid = this.grid;
+        var ex = x + width;
+        var ey = y + height;
+        for (var r = y; r < ey; r++) {
+            var row = grid[r];
+            if (!row) {
+                continue;
+            }
+            for (var c = x; c < ex; c++) {
+                var node = row[c]
+                if (node) {
+                    node.value = null;
+                }
+            }
+        }
+    },
     /***************************************
       通过重写以下几个方法, 可以实现不同的迷宫效果
     **************************************/
 
     getValidNeighbors: function(node) {
-        var n = [];
+        var nList = [];
+        var nMap = {};
+
         var c = node.x;
         var r = node.y;
         var dir, nearNode;
 
         dir = Maze.Direction.N;
         nearNode = r > 0 ? this.grid[r - 1][c] : null;
-        this.isValid(nearNode, node, dir) && n.push([nearNode, dir]);
+        this.isValid(nearNode, node, dir) && nList.push((nMap[dir] = [nearNode, dir]));
 
         dir = Maze.Direction.E;
         nearNode = this.grid[r][c + 1];
-        this.isValid(nearNode, node, dir) && n.push([nearNode, dir]);
+        this.isValid(nearNode, node, dir) && nList.push((nMap[dir] = [nearNode, dir]));
 
         dir = Maze.Direction.S;
         nearNode = r < this.height - 1 ? this.grid[r + 1][c] : null;
-        this.isValid(nearNode, node, dir) && n.push([nearNode, dir]);
+        this.isValid(nearNode, node, dir) && nList.push((nMap[dir] = [nearNode, dir]));
 
         dir = Maze.Direction.W;
         nearNode = this.grid[r][c - 1];
-        this.isValid(nearNode, node, dir) && n.push([nearNode, dir]);
+        this.isValid(nearNode, node, dir) && nList.push((nMap[dir] = [nearNode, dir]));
 
-        n = this.updateNeighbors(node, n);
+        this.updateValidNeighbors(nList, nMap);
 
-        return n.length > 0 ? n : null;
+        if (nList.length > 0) {
+            nMap.list = nList;
+            return nMap;
+        }
+        return null;
     },
-    updateNeighbors: function(node, neighbors) {
-        return neighbors;
+
+    updateValidNeighbors: function(nList, nMap) {
+
     },
+
     isValid: function(nearNode, node, dir) {
         return nearNode && nearNode.value === 0;
     },
@@ -200,7 +259,8 @@ Maze.prototype = {
     },
 
     getNeighbor: function() {
-        var n = this.neighbors[this.neighbors.length * Math.random() >> 0];
+        var list = this.neighbors.list;
+        var n = list[list.length * Math.random() >> 0];
         return n;
     },
 
@@ -217,6 +277,8 @@ Maze.Direction = {
     S: 2,
     E: 4,
     W: 8,
+    ALL: 1 | 2 | 4 | 8,
+
     opposite: {
         1: 2,
         2: 1,

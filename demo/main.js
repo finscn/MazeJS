@@ -1,47 +1,29 @@
 var maze = new Maze({
-    width: 60,
-    height: 40,
+    width: 20,
+    height: 20,
 
     perfect: true,
     braid: false,
     checkOver: false,
 
     onInit: function() {
-        this.checkOver=$id("checkOver").checked;
+        this.checkOver = $id("checkOver").checked;
         this.checkCount = {};
         // this.traceInfo = {};
         this.foundEndNode = false;
     },
 
-    getValidNeighbors: function(node) {
-        var n = [];
-        var c = node.x;
-        var r = node.y;
-        var nearNode, dir;
-
-        nearNode = r > 0 ? this.grid[r - 1][c] : null;
-        dir = Maze.Direction.N;
-        this.isValid(nearNode, node, dir) && n.push([nearNode, dir]);
-
-        nearNode = this.grid[r][c + 1];
-        dir = Maze.Direction.E;
-        this.isValid(nearNode, node, dir) && n.push([nearNode, dir]);
-
-        nearNode = r < this.height - 1 ? this.grid[r + 1][c] : null;
-        dir = Maze.Direction.S;
-        this.isValid(nearNode, node, dir) && n.push([nearNode, dir]);
-
-        nearNode = this.grid[r][c - 1];
-        dir = Maze.Direction.W;
-        this.isValid(nearNode, node, dir) && n.push([nearNode, dir]);
-
-        n = this.updateNeighbors(node, n);
-
-        return n.length > 0 ? n : null;
+    getNeighbor: function() {
+        // if (this.currentDirCount < 6 && this.neighbors[this.currentDir]) {
+        //     return this.neighbors[this.currentDir];
+        // }
+        var list = this.neighbors.list;
+        var n = list[list.length * Math.random() >> 0];
+        return n;
     },
 
     isValid: function(nearNode, node, dir) {
-        if (!nearNode) {
+        if (!nearNode || nearNode.value === null) {
             return false;
         }
         if (nearNode.value === 0) {
@@ -59,11 +41,12 @@ var maze = new Maze({
     },
 
     beforeBacktrace: function() {
+        // if (!this.braid || Math.random() < 0.5) {
         if (!this.braid) {
             return;
         }
         var n = [];
-        var node = this.current;
+        var node = this.currentNode;
         var c = node.x;
         var r = node.y;
         var nearNode, dir, op;
@@ -72,7 +55,7 @@ var maze = new Maze({
         var currentDir = this.currentDir;
         var updateNear = function() {
             op = Maze.Direction.opposite[dir];
-            if (nearNode && (nearNode.value & op) !== op) {
+            if (nearNode && nearNode.value !== null && (nearNode.value & op) !== op) {
                 n.push([nearNode, dir]);
                 if (dir == currentDir) {
                     first = [nearNode, dir];
@@ -107,7 +90,7 @@ var maze = new Maze({
     },
 
     updateCurrent: function() {
-        // this.traceInfo[this.current.x + "-" + this.current.y] = this.stepCount;
+        // this.traceInfo[this.currentNode.x + "-" + this.currentNode.y] = this.stepCount;
         if (this.braid) {
             return;
         }
@@ -138,17 +121,18 @@ var maze = new Maze({
     },
 
     afterGenrate: function() {
-        if (this.braid) {
+        if (this.braid && this.getRoadCount(this.startNode)<2) {
+            this.currentDirCount = 1000;
             this.setCurrent(this.startNode);
             this.nextStep();
         }
     },
 
     isOver: function() {
-        if (!this.checkOver){
+        if (!this.checkOver) {
             return false;
         }
-        if (this.current == this.endNode) {
+        if (this.currentNode == this.endNode) {
             this.foundEndNode = true;
         }
         // 当探索到迷宫终点, 且探索了至少一半的区域时,终止迷宫的生成
@@ -178,6 +162,7 @@ function createMaze(perfect, braid) {
     maze.braid = braid || false;
 
     maze.init();
+
     // maze.setStart(0, 0);
     // maze.setEnd(4, 4);
 
@@ -186,7 +171,10 @@ function createMaze(perfect, braid) {
         maze.endNode = maze.getRandomNode();
     } while (maze.startNode == maze.endNode);
 
+    // maze.setBlock(15, 15, 6, 5);
+    // maze.setRoom(5, 5, 6, 5);
     maze.generate();
+
 
     renderMaze(context, maze);
 }
@@ -207,17 +195,21 @@ function renderMaze(context, maze) {
 
     // var grid = JSON.parse(JSON.stringify(maze.grid));
     var grid = maze.grid;
-
+    var canvasWidth = 800,
+        canvasHeight = 600;
+    var padding = 10;
     var wallWidth = 2;
-    var cellSize = 16;
-    // var cellSize = 36;
-    var width = cellSize * maze.width;
-    var height = cellSize * maze.height;
-    var x = 10,
-        y = 10;
 
-    canvas.width = width + wallWidth + x * 2;
-    canvas.height = height + wallWidth + y * 2;
+    var cellSize = (canvasWidth - padding * 2) / maze.width;
+    cellSize = Math.min(cellSize, (canvasHeight - padding * 2) / maze.height) >> 0;
+    var x = padding,
+        y = padding;
+
+    var cellW = cellSize;
+    var cellH = cellSize;
+
+    canvas.width = canvasWidth;
+    canvas.height = canvasHeight;
 
     context.fillStyle = "#eeeeee";
     context.fillRect(0, 0, canvas.width, canvas.height);
@@ -226,34 +218,47 @@ function renderMaze(context, maze) {
     context.font = "12px Arial";
     context.lineWidth = wallWidth;
 
+    var cellY = y;
+    var mazeHeight = 0;
     for (var r = 0; r < grid.length; r++) {
         var row = grid[r];
+
+        // cellH=cellSize-5+(Math.random()*20>>0);
+        cellH = cellSize;
+
         for (var c = 0; c < row.length; c++) {
             var node = row[c];
-            var cx = c * cellSize + x;
-            var cy = r * cellSize + y;
+            var cx = c * cellW + x;
+            var cy = cellY;
             if (!node.value) {
-                context.fillRect(cx, cy, cellSize, cellSize);
+                context.fillRect(cx, cy, cellW, cellH);
                 continue;
             }
 
             if (node == maze.startNode) {
-                context.fillText("S", cx + cellSize * 1 / 3, cy + cellSize - 2);
+                context.fillStyle = "#f3bbaa";
+                context.fillRect(cx, cy, cellW, cellH);
+                context.fillStyle = "#334466";
+                context.fillText("S", cx + cellW * 1 / 3, cy + cellH - 2);
             } else if (node == maze.endNode) {
-                context.fillText("E", cx + cellSize * 1 / 3, cy + cellSize - 2);
+                context.fillStyle = "#f3bbaa";
+                context.fillRect(cx, cy, cellW, cellH);
+                context.fillStyle = "#334466";
+                context.fillText("E", cx + cellW * 1 / 3, cy + cellH - 2);
             } else {
                 // var text = maze.traceInfo[node.x + "-" + node.y];
-                // context.fillText(text, cx + cellSize * 1 / 3, cy + cellSize - 2);
+                // context.fillText(text, cx + cellW * 1 / 3, cy + cellH - 2);
             }
+
             var left = (node.value & Maze.Direction.W) !== Maze.Direction.W;
             var top = (node.value & Maze.Direction.N) !== Maze.Direction.N;
             if (left && top) {
-                context.fillRect(cx, cy, wallWidth, cellSize);
-                context.fillRect(cx, cy, cellSize, wallWidth);
+                context.fillRect(cx, cy, wallWidth, cellH);
+                context.fillRect(cx, cy, cellW, wallWidth);
             } else if (left) {
-                context.fillRect(cx, cy, wallWidth, cellSize);
+                context.fillRect(cx, cy, wallWidth, cellH);
             } else if (top) {
-                context.fillRect(cx, cy, cellSize, wallWidth);
+                context.fillRect(cx, cy, cellW, wallWidth);
             } else {
                 var w = false;
                 if (r > 0) {
@@ -268,8 +273,10 @@ function renderMaze(context, maze) {
                 }
             }
         }
+        cellY += cellH;
+        mazeHeight += cellH;
     }
 
-    context.fillRect(x, cellSize * maze.height + y, cellSize * maze.width, wallWidth);
-    context.fillRect(cellSize * maze.width + x, y, wallWidth, cellSize * maze.height + wallWidth);
+    context.fillRect(x, mazeHeight + y, cellW * maze.width, wallWidth);
+    context.fillRect(cellW * maze.width + x, y, wallWidth, mazeHeight + wallWidth);
 }
